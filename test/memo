@@ -1,0 +1,2 @@
+FORK_URL=https://bsc-dataseed1.binance.org/
+forge test --fork-url $FORK_URL --match-path test/GetPrice.t.sol -vvv
