@@ -1,17 +1,22 @@
 pragma solidity ^0.8.18;
 
-import "forge-std/Test.sol";
-import "../contracts/diamond/interfaces/ITradingReader.sol";
-import "../contracts/diamond/interfaces/ITradingPortal.sol";
-import "../contracts/diamond/interfaces/IBook.sol";
-import "../contracts/diamond/interfaces/ITradingConfig.sol";
+import "./diamond/interfaces/ITradingReader.sol";
+import "./diamond/interfaces/ITradingPortal.sol";
+import "./diamond/interfaces/IBook.sol";
+import "./diamond/interfaces/ITradingConfig.sol";
+import "./accesscontrol.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract PlaceMarketWithPositionCleaning {
+
+
+contract ApolloxTrade is Tradable {
     address contract_address = 0x1b6F2d3844C6ae7D56ceb3C3643b9060ba28FEb0;
+    address usdt_address     = 0x55d398326f99059fF775485246999027B3197955;
 
     event Result(address indexed sender, uint80 indexed inputQty, uint80 indexed remainQty);
 
-    function openMarketTradeWithPositionCleaning(ITradingPortal.OpenDataInput calldata openDataInput) external {
+    function openMarketTradeWithPositionCleaning(address vault, ITradingPortal.OpenDataInput calldata openDataInput) external {
         uint80 originQty = openDataInput.qty;
 
         ITradingReader.Position[] memory positions = ITradingReader(address(contract_address)).getPositions(
@@ -50,11 +55,13 @@ contract PlaceMarketWithPositionCleaning {
             if (notionalUsd < (tc.minNotionalUsd * 105) / 100) {
                 emit Result(msg.sender, originQty, remainQty);
             } else {
+                uint96 amountIn = remainQty/originQty * openDataInput.amountIn;
+
                 IBook.OpenDataInput memory openDataInputNew = IBook.OpenDataInput({
                     pairBase: openDataInput.pairBase,
                     isLong: openDataInput.isLong,
                     tokenIn: openDataInput.tokenIn,
-                    amountIn: openDataInput.amountIn,
+                    amountIn: amountIn,
                     qty: remainQty,
                     price: openDataInput.price,
                     stopLoss: openDataInput.stopLoss,
@@ -62,10 +69,25 @@ contract PlaceMarketWithPositionCleaning {
                     broker: openDataInput.broker
                 });
 
+                safeTransferFromVault(vault, amountIn);
+            
                 ITradingPortal(address(contract_address)).openMarketTrade(openDataInputNew);
                 emit Result(msg.sender, originQty, 0);
+
+                returnRemainingToVault(vault);
             }
         }
+    }
+
+    function closePosition(address vault, bytes32 tradeHash) external {
+        ITradingPortal(address(contract_address)).closeTrade(tradeHash);
+        returnRemainingToVault(vault);
+    }
+
+    function addMargin(address vault, bytes32 tradeHash, uint96 amount) external {
+        safeTransferFromVault(vault, amount);
+        ITradingPortal(address(contract_address)).addMargin(tradeHash, amount);
+        returnRemainingToVault(vault);
     }
 
     // closePositionsFirst close the existing postions first, and return the remaining qty that needs to be placed as new order.
@@ -134,5 +156,21 @@ contract PlaceMarketWithPositionCleaning {
         }
 
         return positions;
+    }
+
+    function safeTransferFromVault(address vault, uint256 amount) internal {
+        if (address(vault) != address(msg.sender)) {
+            require(IERC20(address(usdt_address)).allowance(vault, address(this)) >= amount,"vault not allowed.");
+            SafeERC20.safeTransferFrom(IERC20(address(usdt_address)), address(vault), address(this), amount);
+        }
+    }
+
+    function returnRemainingToVault(address vault) internal {
+        if (address(vault) != address(msg.sender)) {
+            uint256 usdtBalance = IERC20(address(usdt_address)).balanceOf(address(this));
+            if (usdtBalance > 0) {
+                SafeERC20.safeTransfer(IERC20(address(usdt_address)), address(vault), usdtBalance);
+            }
+        }
     }
 }

@@ -1,3 +1,5 @@
+pragma solidity ^0.8.18;
+
 contract Ownable {
     address payable public _OWNER_;
     address payable public _NEW_OWNER_;
@@ -24,7 +26,7 @@ contract Ownable {
     // ============ Functions ============
 
     constructor() {
-        _OWNER_ = msg.sender;
+        _OWNER_ = payable(msg.sender);
         emit OwnershipTransferred(address(0), _OWNER_);
     }
 
@@ -38,7 +40,7 @@ contract Ownable {
         require(msg.sender == _NEW_OWNER_, "INVALID_CLAIM");
         emit OwnershipTransferred(_OWNER_, _NEW_OWNER_);
         _OWNER_ = _NEW_OWNER_;
-        _NEW_OWNER_ = address(0);
+        _NEW_OWNER_ = payable(address(0));
     }
 }
 
