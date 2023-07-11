@@ -1,5 +1,6 @@
 pragma solidity ^0.8.18;
 
+import "forge-std/Test.sol";
 import "./diamond/interfaces/ITradingReader.sol";
 import "./diamond/interfaces/ITradingPortal.sol";
 import "./diamond/interfaces/IBook.sol";
@@ -95,7 +96,6 @@ contract ApolloxTrade is Tradable {
         internal
         returns (uint80 remainQty)
     {
-    
         for (uint256 i = 0; i < positions.length; i++) {
             if (positions[i].qty > qty) {
                 continue;
@@ -122,10 +122,12 @@ contract ApolloxTrade is Tradable {
 
     function sortPositionsByEntryPriceAscend(ITradingReader.Position[] memory positions)
         internal
-        pure
         returns (ITradingReader.Position[] memory)
     {
         uint256 n = positions.length;
+        if (n==0) {
+            return positions;
+        }
         for (uint256 i = 0; i < n - 1; i++) {
             for (uint256 j = 0; j < n - i - 1; j++) {
                 if (positions[j].entryPrice > positions[j + 1].entryPrice) {
@@ -145,6 +147,9 @@ contract ApolloxTrade is Tradable {
         returns (ITradingReader.Position[] memory)
     {
         uint256 n = positions.length;
+        if (n==0) {
+            return positions;
+        }
         for (uint256 i = 0; i < n - 1; i++) {
             for (uint256 j = 0; j < n - i - 1; j++) {
                 if (positions[j].entryPrice < positions[j + 1].entryPrice) {
