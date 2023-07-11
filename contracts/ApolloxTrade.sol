@@ -164,18 +164,14 @@ contract ApolloxTrade is Tradable {
     }
 
     function safeTransferFromVault(address vault, uint256 amount) internal {
-        if (address(vault) != address(msg.sender)) {
-            require(IERC20(address(usdt_address)).allowance(vault, address(this)) >= amount,"vault not allowed.");
-            SafeERC20.safeTransferFrom(IERC20(address(usdt_address)), address(vault), address(this), amount);
-        }
+        require(IERC20(address(usdt_address)).allowance(vault, address(this)) >= amount,"vault not allowed.");
+        SafeERC20.safeTransferFrom(IERC20(address(usdt_address)), address(vault), address(this), amount);
     }
 
     function returnRemainingToVault(address vault) internal {
-        if (address(vault) != address(msg.sender)) {
-            uint256 usdtBalance = IERC20(address(usdt_address)).balanceOf(address(this));
-            if (usdtBalance > 0) {
-                SafeERC20.safeTransfer(IERC20(address(usdt_address)), address(vault), usdtBalance);
-            }
+        uint256 usdtBalance = IERC20(address(usdt_address)).balanceOf(address(this));
+        if (usdtBalance > 0) {
+            SafeERC20.safeTransfer(IERC20(address(usdt_address)), address(vault), usdtBalance);
         }
     }
 }
