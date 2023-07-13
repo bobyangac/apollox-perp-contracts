@@ -19,7 +19,7 @@ contract PlaceMarketTest is Test {
         IBook.OpenDataInput memory openDataInput = IBook.OpenDataInput({
             pairBase: address(eth_usd_address),
             isLong: true,
-            tokenIn: address(usdt_address),
+            tokenIn: usdt_address,
             amountIn: 70000000000000000000,
             qty: 1500000000,
             price: 186006058732,
@@ -34,8 +34,8 @@ contract PlaceMarketTest is Test {
     function openMarketTradeWithPositionCleaning(ITradingPortal.OpenDataInput memory openDataInput) internal {
         uint80 originQty = openDataInput.qty;
 
-        ITradingReader.Position[] memory positions = ITradingReader(address(contract_address)).getPositions(
-            address(test_wallet), address(0x0000000000000000000000000000000000000000)
+        ITradingReader.Position[] memory positions = ITradingReader(contract_address).getPositions(
+            test_wallet, address(0x0000000000000000000000000000000000000000)
         );
 
         ITradingReader.Position[] memory longPositions;
@@ -61,7 +61,7 @@ contract PlaceMarketTest is Test {
         if (remainQty > 0) {
             openDataInput.qty = remainQty;
 
-            ITradingConfig.TradingConfig memory tc = ITradingConfig(address(contract_address)).getTradingConfig();
+            ITradingConfig.TradingConfig memory tc = ITradingConfig(contract_address).getTradingConfig();
 
             uint256 notionalUsd = openDataInput.price * openDataInput.qty;
             // 5% buffer for min notional
@@ -69,7 +69,7 @@ contract PlaceMarketTest is Test {
                 emit Result(msg.sender, originQty, remainQty);
                 return;
             } else {
-                ITradingPortal(address(contract_address)).openMarketTrade(openDataInput);
+                ITradingPortal(contract_address).openMarketTrade(openDataInput);
                 emit Result(msg.sender, originQty, 0);
             }
         }
@@ -89,9 +89,9 @@ contract PlaceMarketTest is Test {
                 console.log("close position qty: ", positions[i].qty);
                 console.log("close position is long: ", positions[i].isLong);
                 console.log("msg.sender........: ", msg.sender);    
-                hoax(address(test_wallet), 1000000000000000000000000000);
+                hoax(test_wallet, 1000000000000000000000000000);
                 console.log("msg.sender........2: ", msg.sender);
-                ITradingPortal(address(contract_address)).closeTrade(positions[i].positionHash);
+                ITradingPortal(contract_address).closeTrade(positions[i].positionHash);
                 qty -= positions[i].qty;
             }
         }

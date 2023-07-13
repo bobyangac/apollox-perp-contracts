@@ -1,0 +1,243 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferPrepared",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint80",
+        "name": "inputQty",
+        "type": "uint80"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint80",
+        "name": "remainQty",
+        "type": "uint80"
+      }
+    ],
+    "name": "Result",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "_NEW_OWNER_",
+    "outputs": [
+      {
+        "internalType": "address payable",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "_OWNER_",
+    "outputs": [
+      {
+        "internalType": "address payable",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "vault",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "tradeHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint96",
+        "name": "amount",
+        "type": "uint96"
+      }
+    ],
+    "name": "addMargin",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "trader",
+        "type": "address"
+      }
+    ],
+    "name": "approveTraderAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "claimOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "vault",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "tradeHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "closePosition",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "vault",
+        "type": "address"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "pairBase",
+            "type": "address"
+          },
+          {
+            "internalType": "bool",
+            "name": "isLong",
+            "type": "bool"
+          },
+          {
+            "internalType": "address",
+            "name": "tokenIn",
+            "type": "address"
+          },
+          {
+            "internalType": "uint96",
+            "name": "amountIn",
+            "type": "uint96"
+          },
+          {
+            "internalType": "uint80",
+            "name": "qty",
+            "type": "uint80"
+          },
+          {
+            "internalType": "uint64",
+            "name": "price",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "stopLoss",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "takeProfit",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint24",
+            "name": "broker",
+            "type": "uint24"
+          }
+        ],
+        "internalType": "struct IBook.OpenDataInput",
+        "name": "openDataInput",
+        "type": "tuple"
+      }
+    ],
+    "name": "openMarketTradeWithPositionCleaning",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "trader",
+        "type": "address"
+      }
+    ],
+    "name": "removeTraderAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address payable",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

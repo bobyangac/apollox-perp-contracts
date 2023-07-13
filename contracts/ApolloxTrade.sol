@@ -1,11 +1,11 @@
 pragma solidity ^0.8.18;
 
 import "forge-std/Test.sol";
-import "./diamond/interfaces/ITradingReader.sol";
-import "./diamond/interfaces/ITradingPortal.sol";
-import "./diamond/interfaces/IBook.sol";
-import "./diamond/interfaces/ITradingConfig.sol";
-import "./accesscontrol.sol";
+import "../contracts/diamond/interfaces/ITradingReader.sol";
+import "../contracts/diamond/interfaces/ITradingPortal.sol";
+import "../contracts/diamond/interfaces/IBook.sol";
+import "../contracts/diamond/interfaces/ITradingConfig.sol";
+import "../contracts/accesscontrol.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -20,7 +20,7 @@ contract ApolloxTrade is Tradable {
     function openMarketTradeWithPositionCleaning(address vault, ITradingPortal.OpenDataInput calldata openDataInput) external {
         uint80 originQty = openDataInput.qty;
 
-        ITradingReader.Position[] memory positions = ITradingReader(address(contract_address)).getPositions(
+        ITradingReader.Position[] memory positions = ITradingReader(contract_address).getPositions(
             address(msg.sender), address(openDataInput.pairBase)
         );
 
@@ -48,7 +48,7 @@ contract ApolloxTrade is Tradable {
 
         // Place new order with remaining qty.
         if (remainQty > 0) {
-            ITradingConfig.TradingConfig memory tc = ITradingConfig(address(contract_address)).getTradingConfig();
+            ITradingConfig.TradingConfig memory tc = ITradingConfig(contract_address).getTradingConfig();
 
             uint256 notionalUsd = openDataInput.price * openDataInput.qty;
 
@@ -71,8 +71,11 @@ contract ApolloxTrade is Tradable {
                 });
 
                 safeTransferFromVault(vault, amountIn);
+                bool approveSuccess = IERC20(usdt_address).approve(contract_address,amountIn);
+                require(approveSuccess, "approve usdt to apollox failed");
+                
             
-                ITradingPortal(address(contract_address)).openMarketTrade(openDataInputNew);
+                ITradingPortal(contract_address).openMarketTrade(openDataInputNew);
                 emit Result(msg.sender, originQty, 0);
 
                 returnRemainingToVault(vault);
@@ -81,13 +84,16 @@ contract ApolloxTrade is Tradable {
     }
 
     function closePosition(address vault, bytes32 tradeHash) external {
-        ITradingPortal(address(contract_address)).closeTrade(tradeHash);
+        ITradingPortal(contract_address).closeTrade(tradeHash);
         returnRemainingToVault(vault);
     }
 
     function addMargin(address vault, bytes32 tradeHash, uint96 amount) external {
         safeTransferFromVault(vault, amount);
-        ITradingPortal(address(contract_address)).addMargin(tradeHash, amount);
+        bool approveSuccess = IERC20(usdt_address).approve(contract_address, amount);
+        require(approveSuccess, "approve usdt to apollox failed");
+
+        ITradingPortal(contract_address).addMargin(tradeHash, amount);
         returnRemainingToVault(vault);
     }
 
@@ -100,7 +106,7 @@ contract ApolloxTrade is Tradable {
             if (positions[i].qty > qty) {
                 continue;
             } else {
-                ITradingPortal(address(contract_address)).closeTrade(positions[i].positionHash);
+                ITradingPortal(contract_address).closeTrade(positions[i].positionHash);
                 qty -= positions[i].qty;
             }
         }
@@ -122,6 +128,7 @@ contract ApolloxTrade is Tradable {
 
     function sortPositionsByEntryPriceAscend(ITradingReader.Position[] memory positions)
         internal
+        pure
         returns (ITradingReader.Position[] memory)
     {
         uint256 n = positions.length;
@@ -164,14 +171,14 @@ contract ApolloxTrade is Tradable {
     }
 
     function safeTransferFromVault(address vault, uint256 amount) internal {
-        require(IERC20(address(usdt_address)).allowance(vault, address(this)) >= amount,"vault not allowed.");
-        SafeERC20.safeTransferFrom(IERC20(address(usdt_address)), address(vault), address(this), amount);
+        require(IERC20(usdt_address).allowance(vault, address(this)) >= amount,"vault not allowed.");
+        SafeERC20.safeTransferFrom(IERC20(usdt_address), address(vault), address(this), amount);
     }
 
     function returnRemainingToVault(address vault) internal {
-        uint256 usdtBalance = IERC20(address(usdt_address)).balanceOf(address(this));
+        uint256 usdtBalance = IERC20(usdt_address).balanceOf(address(this));
         if (usdtBalance > 0) {
-            SafeERC20.safeTransfer(IERC20(address(usdt_address)), address(vault), usdtBalance);
+            SafeERC20.safeTransfer(IERC20(usdt_address), address(vault), usdtBalance);
         }
     }
 }

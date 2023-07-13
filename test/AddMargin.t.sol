@@ -5,13 +5,13 @@ import "../contracts/ApolloxTrade.sol";
 import "../contracts/diamond/interfaces/IBook.sol";
 
 
-contract ClosePositionTest is Test {
+contract AddMarginTest is Test {
     address eth_usd_address = 0x2170Ed0880ac9A755fd29B2688956BD959F933F8;
     address usdt_address = 0x55d398326f99059fF775485246999027B3197955;
     address test_wallet = 0x609F4479A03DF91C635C451835d22cC12C7108C0;
     address contract_address = 0x1b6F2d3844C6ae7D56ceb3C3643b9060ba28FEb0;
 
-    function testClosePosition() public {
+    function testAddMargin() public {
         startHoax(test_wallet);
 
         ITradingReader.Position[] memory positions = ITradingReader(contract_address)
@@ -23,7 +23,9 @@ contract ClosePositionTest is Test {
             console.log("isLong: ",position.pair);
             console.log("entryPrice: ",position.entryPrice);
             console.log("qty: ",position.qty);
-            ITradingPortal(contract_address).closeTrade(positions[i].positionHash);
+            bool approveSuccess = IERC20(usdt_address).approve(contract_address,10000000000000000000);
+            console.log("approveSuccess: ",approveSuccess);
+            ITradingPortal(contract_address).addMargin(positions[i].positionHash,10000000000000000000);
         }
     }
 }

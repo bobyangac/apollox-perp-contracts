@@ -5,6 +5,7 @@ import "../contracts/diamond/interfaces/ITradingReader.sol";
 import "../contracts/diamond/interfaces/ITradingPortal.sol";
 import "../contracts/diamond/interfaces/IBook.sol";
 import "../contracts/diamond/interfaces/ITradingConfig.sol";
+// import "../contracts/ApolloxTrade.sol";
 
 contract PlaceMarketTest is Test {
     address test_wallet = 0x609F4479A03DF91C635C451835d22cC12C7108C0;
@@ -19,7 +20,7 @@ contract PlaceMarketTest is Test {
         IBook.OpenDataInput memory openDataInput = IBook.OpenDataInput({
             pairBase: address(eth_usd_address),
             isLong: true,
-            tokenIn: address(usdt_address),
+            tokenIn: usdt_address,
             amountIn: 70000000000000000000,
             qty: 1500000000,
             price: 186006058732,
@@ -30,8 +31,8 @@ contract PlaceMarketTest is Test {
 
         uint80 originQty = openDataInput.qty;
 
-        ITradingReader.Position[] memory positions = ITradingReader(address(contract_address)).getPositions(
-            address(test_wallet), address(0x0000000000000000000000000000000000000000)
+        ITradingReader.Position[] memory positions = ITradingReader(contract_address).getPositions(
+            test_wallet, address(0x0000000000000000000000000000000000000000)
         );
 
         ITradingReader.Position[] memory longPositions;
@@ -45,19 +46,24 @@ contract PlaceMarketTest is Test {
             }
         }
 
+        // hoax(test_wallet, 1000000000000000000000000000);
+        // ApolloxTrade apolloxtrade = new ApolloxTrade();
+
         uint80 remainQty = 0;
         if (openDataInput.isLong) {
             shortPositions = sortPositionsByEntryPriceDescend(shortPositions);
             remainQty = closePositionsFirst(openDataInput.qty, shortPositions);
+            // remainQty = apolloxtrade.closePositionsFirst(openDataInput.qty, shortPositions);
         } else {
             longPositions = sortPositionsByEntryPriceAscend(longPositions);
             remainQty = closePositionsFirst(openDataInput.qty, longPositions);
+            // remainQty = apolloxtrade.closePositionsFirst(openDataInput.qty, longPositions);
         }
 
         if (remainQty > 0) {
             openDataInput.qty = remainQty;
 
-            ITradingConfig.TradingConfig memory tc = ITradingConfig(address(contract_address)).getTradingConfig();
+            ITradingConfig.TradingConfig memory tc = ITradingConfig(contract_address).getTradingConfig();
 
             uint256 notionalUsd = openDataInput.price * openDataInput.qty;
             // 5% buffer for min notional
@@ -65,7 +71,7 @@ contract PlaceMarketTest is Test {
                 emit Result(msg.sender, originQty, remainQty);
                 return;
             } else {
-                ITradingPortal(address(contract_address)).openMarketTrade(openDataInput);
+                ITradingPortal(contract_address).openMarketTrade(openDataInput);
                 emit Result(msg.sender, originQty, 0);
             }
         }
@@ -83,9 +89,8 @@ contract PlaceMarketTest is Test {
                 console.log("close position qty: ", positions[i].qty);
                 console.log("close position is long: ", positions[i].isLong);
                 console.log("msg.sender........: ", msg.sender);
-                hoax(address(test_wallet), 1000000000000000000000000000);
                 console.log("msg.sender........2: ", msg.sender);
-                ITradingPortal(address(contract_address)).closeTrade(positions[i].positionHash);
+                ITradingPortal(contract_address).closeTrade(positions[i].positionHash);
                 qty -= positions[i].qty;
             }
         }

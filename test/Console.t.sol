@@ -1,7 +1,6 @@
 pragma solidity ^0.8.18;
 
 import "forge-std/Test.sol";
-import "../contracts/ApolloxTrade.sol";
 import "../contracts/diamond/interfaces/IBook.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -14,7 +13,5 @@ contract ConsoleTest is Test {
         int256 x = -1;
         console.logInt(x);
 
-        uint256 balBefore = IERC20(address(usdt_address)).balanceOf(address(this));
-        console.log("balance before", balBefore / 1e18);
     }
 }

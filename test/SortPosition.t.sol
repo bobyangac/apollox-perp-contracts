@@ -9,11 +9,11 @@ contract SortPositionsTest is Test {
     address contract_address = 0x1b6F2d3844C6ae7D56ceb3C3643b9060ba28FEb0;
 
     function testSortPositions() public {
-        ITradingReader.Position[] memory positions = ITradingReader(address(contract_address)).getPositions(
-            address(test_wallet), address(0x0000000000000000000000000000000000000000)
+        ITradingReader.Position[] memory positions = ITradingReader(contract_address).getPositions(
+            test_wallet, address(0x0000000000000000000000000000000000000000)
         );
 
-        hoax(address(test_wallet), 1000000000);
+        hoax(test_wallet, 1000000000);
 
         ITradingReader.Position[] memory longPositions;
         ITradingReader.Position[] memory shortPositions;
